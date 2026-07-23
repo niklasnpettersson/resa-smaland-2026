@@ -58,8 +58,9 @@ body {
 
 .site-header--photo {
   display: flex;
-  align-items: flex-end;
-  min-height: clamp(13rem, 42vw, 18rem);
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: clamp(16rem, 52vw, 22rem);
   padding: 0;
 }
 
@@ -69,15 +70,20 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 28%;
+  object-position: center 45%;
 }
 
 .header-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(27, 67, 50, 0.15) 0%, rgba(27, 67, 50, 0.55) 45%, rgba(27, 67, 50, 0.92) 100%),
-    linear-gradient(90deg, rgba(27, 67, 50, 0.35) 0%, transparent 55%);
+    linear-gradient(
+      180deg,
+      rgba(27, 67, 50, 0.12) 0%,
+      rgba(27, 67, 50, 0.2) 40%,
+      rgba(27, 67, 50, 0.72) 72%,
+      rgba(27, 67, 50, 0.94) 100%
+    );
   pointer-events: none;
 }
 
@@ -87,7 +93,7 @@ body {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  padding: 1.75rem 1rem 1.35rem;
+  padding: 5.5rem 1rem 1.25rem;
 }
 
 .eyebrow {
@@ -116,11 +122,15 @@ body {
 
 @media (min-width: 640px) {
   .site-header--photo {
-    min-height: 16rem;
+    min-height: 20rem;
   }
 
   .header-photo {
-    object-position: center 32%;
+    object-position: center 42%;
+  }
+
+  .header-inner {
+    padding-top: 7rem;
   }
 }
 
