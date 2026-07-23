@@ -760,21 +760,22 @@ body {
   padding: 0;
 }
 
-.must-bring-card {
+.packing-card[data-packing-person="elin"] {
   border-color: #f4a261;
-  background: linear-gradient(145deg, #fff, #fff4e6);
+  background: linear-gradient(145deg, #fff, #fff8f0);
 }
 
-.must-bring-card h3 {
-  color: #9a3412;
+.packing-group-title {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.must-bring-list li {
-  font-weight: 600;
-}
-
-.must-bring-list li::before {
-  color: #e76f51;
+.packing-card .checklist {
+  margin-bottom: 0.25rem;
 }
 
 #btn-open-maps {

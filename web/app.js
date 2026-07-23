@@ -2,6 +2,7 @@
   const STORAGE_KEYS = {
     notes: "resa-smaland-notes-v1",
     checklist: "resa-smaland-checklist-v1",
+    packing: "resa-smaland-packing-v1",
     draft: "resa-smaland-draft-v1",
   };
 
@@ -246,11 +247,86 @@
       .join("");
 
     $("#ev-tips").innerHTML = TRIP_DATA.evTips.map((tip) => `<li>${tip}</li>`).join("");
-    $("#must-bring-list").innerHTML = TRIP_DATA.mustBring.map((item) => `<li>${item}</li>`).join("");
-    $("#pack-list").innerHTML = TRIP_DATA.packList.map((item) => `<li>${item}</li>`).join("");
     $("#useful-links").innerHTML = TRIP_DATA.links
       .map((link) => `<li><a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.label}</a></li>`)
       .join("");
+  }
+
+  function packingItemKey(personId, item) {
+    return `${personId}|${item}`;
+  }
+
+  function countPacked(person, state) {
+    let total = 0;
+    let done = 0;
+    for (const group of person.groups) {
+      for (const item of group.items) {
+        total += 1;
+        if (state[packingItemKey(person.id, item)]) done += 1;
+      }
+    }
+    return { done, total };
+  }
+
+  function renderPacking() {
+    const container = $("#packing-sections");
+    if (!container) return;
+    const state = loadJson(STORAGE_KEYS.packing, {});
+
+    container.innerHTML = TRIP_DATA.packing
+      .map((person) => {
+        const { done, total } = countPacked(person, state);
+        const groupsHtml = person.groups
+          .map((group) => {
+            const itemsHtml = group.items
+              .map((item) => {
+                const key = packingItemKey(person.id, item);
+                const checked = Boolean(state[key]);
+                return `
+                  <li>
+                    <label class="check-label">
+                      <input type="checkbox" data-pack-key="${escapeAttr(key)}" data-pack-person="${person.id}" ${checked ? "checked" : ""} />
+                      <span class="${checked ? "done" : ""}">${item}</span>
+                    </label>
+                  </li>`;
+              })
+              .join("");
+            return `
+              <h4 class="packing-group-title">${group.title}</h4>
+              <ul class="checklist">${itemsHtml}</ul>`;
+          })
+          .join("");
+
+        return `
+          <article class="card packing-card" data-packing-person="${person.id}">
+            <div class="card-header-row">
+              <h3>${person.emoji} Packlista ${person.name}</h3>
+              <span class="save-status" data-pack-count="${person.id}">${done} av ${total} packat</span>
+            </div>
+            ${groupsHtml}
+          </article>`;
+      })
+      .join("");
+
+    container.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "checkbox") return;
+      const key = input.dataset.packKey;
+      if (!key) return;
+
+      const saved = loadJson(STORAGE_KEYS.packing, {});
+      saved[key] = input.checked;
+      saveJson(STORAGE_KEYS.packing, saved);
+      input.nextElementSibling?.classList.toggle("done", input.checked);
+
+      const personId = input.dataset.packPerson;
+      const person = TRIP_DATA.packing.find((p) => p.id === personId);
+      const countEl = $(`[data-pack-count="${personId}"]`);
+      if (person && countEl) {
+        const { done, total } = countPacked(person, saved);
+        countEl.textContent = `${done} av ${total} packat`;
+      }
+    });
   }
 
   function getNotes() {
@@ -862,6 +938,7 @@
     renderDayPicker();
     renderDayContent();
     renderMer();
+    renderPacking();
     initDayPicker();
     initDaySwipe();
     initLocation();

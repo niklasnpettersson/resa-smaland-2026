@@ -28,9 +28,13 @@ test("app supports swiping between days", () => {
   assert.match(appSource, /selectAdjacentDay/);
 });
 
-test("trip data includes must-bring essentials", () => {
-  assert.match(dataSource, /mustBring/);
+test("trip data includes per-person packing lists with essentials", () => {
+  assert.match(dataSource, /packing/);
   assert.match(dataSource, /Sertraline/);
+  assert.match(dataSource, /Fragmin/);
+  assert.match(dataSource, /Stödstrumpor/);
+  assert.match(appSource, /renderPacking/);
+  assert.match(appSource, /resa-smaland-packing-v1/);
 });
 
 test("photos support cloud storage facade", () => {

@@ -127,21 +127,99 @@ const TRIP_DATA = {
     "Uppskattad elkostnad hela resan: ca 400–700 kr.",
   ],
 
-  mustBring: [
-    "Niklas: Sertraline.",
-    "Fragmin.",
-    "Madrass (båda).",
-    "Elin.",
-  ],
-
-  packList: [
-    "Badkläder och handdukar.",
-    "Solskydd och myggmedel.",
-    "Bekväma skor för trädgård och skog.",
-    "Långärmad tröja till kvällar vid sjön.",
-    "Laddkabel Typ 2 (för långsam laddning).",
-    "Kylväska om ni lagar mat i stuga.",
-    "Kontanter/Swish för loppisar utan kort.",
+  packing: [
+    {
+      id: "niklas",
+      name: "Niklas",
+      emoji: "🧔",
+      groups: [
+        {
+          title: "Viktigast",
+          items: ["Sertraline", "Elin 💚"],
+        },
+        {
+          title: "Kläder",
+          items: [
+            "T-shirts och shorts",
+            "Långärmad tröja till kvällar vid sjön",
+            "Underkläder och strumpor",
+            "Bekväma skor för trädgård och skog",
+            "Keps eller solhatt",
+          ],
+        },
+        {
+          title: "Badrumsartiklar",
+          items: ["Tandborste och tandkräm", "Deo", "Rakgrejer", "Solkräm"],
+        },
+        {
+          title: "Badkläder",
+          items: ["Badbyxor", "Handduk"],
+        },
+      ],
+    },
+    {
+      id: "elin",
+      name: "Elin",
+      emoji: "🤰",
+      groups: [
+        {
+          title: "Viktigast (gravid)",
+          items: [
+            "Fragmin (sprutor + burk för kanyler)",
+            "Mödravårdsjournal / vårdpapper",
+            "Barnmorskans telefonnummer",
+            "Vitaminer/järntabletter (om du tar)",
+          ],
+        },
+        {
+          title: "Sköna saker för gravid",
+          items: [
+            "Stödstrumpor till bilresan",
+            "Gravidkudde eller extra kudde",
+            "Egen vattenflaska — drick ofta",
+            "Snacks mot illamående (ingefära, kex)",
+            "Gaviscon eller liknande mot halsbränna",
+          ],
+        },
+        {
+          title: "Kläder",
+          items: [
+            "Bekväma, luftiga kläder",
+            "Långärmad tröja till kvällar vid sjön",
+            "Bekväma skor (lätta att ta av och på)",
+            "Solhatt",
+          ],
+        },
+        {
+          title: "Badrumsartiklar",
+          items: ["Tandborste och tandkräm", "Deo", "Hudkräm", "Solkräm med hög faktor"],
+        },
+        {
+          title: "Badkläder",
+          items: ["Baddräkt", "Handduk"],
+        },
+      ],
+    },
+    {
+      id: "gemensamt",
+      name: "Gemensamt",
+      emoji: "🎒",
+      groups: [
+        {
+          title: "Viktigast",
+          items: ["Madrass", "Mobilladdare", "Laddkabel Typ 2 till elbilen"],
+        },
+        {
+          title: "Övrigt",
+          items: [
+            "Solskydd och myggmedel",
+            "Kylväska",
+            "Kontanter/Swish för loppisar",
+            "Kassar till loppisfynd",
+          ],
+        },
+      ],
+    },
   ],
 
   links: [
