@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2d6a4f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="description" content="Resplan Småland 2026 – dela, läs och skriv anteckningar under resan." />
+    <title>Resa Småland 2026</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Hoppa till innehåll</a>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <p class="eyebrow">25–30 juli 2026</p>
+        <h1>Resa Småland</h1>
+        <p class="subtitle">2 personer · Elbil · Bas i Älmhult</p>
+      </div>
+    </header>
+
+    <nav class="tab-nav" aria-label="Huvudmeny">
+      <button type="button" class="tab-btn is-active" data-tab="plan">Plan</button>
+      <button type="button" class="tab-btn" data-tab="dag">Dagar</button>
+      <button type="button" class="tab-btn" data-tab="anteckningar">Anteckningar</button>
+      <button type="button" class="tab-btn" data-tab="bilder">Bilder</button>
+      <button type="button" class="tab-btn" data-tab="mer">Mer</button>
+    </nav>
+
+    <main id="main" class="main">
+      <section id="tab-plan" class="tab-panel is-active" aria-labelledby="plan-heading">
+        <h2 id="plan-heading" class="visually-hidden">Översikt</h2>
+
+        <article class="card location-card" id="location-card">
+          <div class="card-header-row">
+            <h3>Var är vi nu?</h3>
+            <span class="location-badge" id="location-badge">GPS</span>
+          </div>
+          <p class="help-text" id="location-status">Tryck på knappen för att hitta er plats.</p>
+          <p class="location-today" id="location-today" hidden></p>
+          <p class="location-nearest" id="location-nearest" hidden></p>
+          <div class="button-row">
+            <button type="button" class="btn btn-primary" id="btn-update-location">Hitta min plats</button>
+            <a class="btn btn-secondary" id="btn-open-maps" href="#" hidden>Öppna i kartor</a>
+          </div>
+        </article>
+
+        <article class="card highlight-card">
+          <h3>I korthet</h3>
+          <p>Avresa från Stavsnäs 25 juli. Hemma igen senast 30 juli.</p>
+          <ul class="pill-list">
+            <li>Jeppas trädgård</li>
+            <li>Syster vid Bolmen</li>
+            <li>Daniel i Jönköping</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>Veckoschema</h3>
+          <ol class="timeline" id="overview-timeline"></ol>
+        </article>
+
+        <article class="card">
+          <h3>Checklista före avresa</h3>
+          <ul class="checklist" id="pre-trip-checklist"></ul>
+        </article>
+      </section>
+
+      <section id="tab-dag" class="tab-panel" aria-labelledby="dag-heading" hidden>
+        <h2 id="dag-heading" class="visually-hidden">Dag för dag</h2>
+
+        <div class="day-picker" aria-label="Välj dag">
+          <div class="day-picker-scroll" id="day-picker"></div>
+        </div>
+
+        <p class="day-swipe-hint" id="day-swipe-hint">Svep vänster eller höger för att byta dag</p>
+
+        <div class="day-swipe-area" id="day-swipe-area">
+          <div class="day-swipe-content" id="day-swipe-content">
+            <article class="card day-card" id="day-content"></article>
+
+            <article class="card">
+              <h3>Adresser idag</h3>
+              <ul class="address-list" id="day-addresses"></ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-anteckningar" class="tab-panel" aria-labelledby="notes-heading" hidden>
+        <h2 id="notes-heading" class="visually-hidden">Anteckningar</h2>
+
+        <article class="card">
+          <div class="card-header-row">
+            <h3>Din resedagbok</h3>
+            <span class="save-status" id="save-status" aria-live="polite">Sparat</span>
+          </div>
+          <p class="help-text">
+            Skriv tankar, köp, minnen eller saker att dela. Allt sparas automatiskt i telefonen.
+          </p>
+
+          <label class="field-label" for="note-title">Rubrik (valfritt)</label>
+          <input type="text" id="note-title" class="text-input" placeholder="T.ex. Dag 2 – Jeppas trädgård" autocomplete="off" />
+
+          <label class="field-label" for="note-body">Anteckning</label>
+          <textarea id="note-body" class="text-area" rows="8" placeholder="Skriv här…"></textarea>
+
+          <div class="button-row">
+            <button type="button" class="btn btn-primary" id="btn-save-note">Spara nu</button>
+            <button type="button" class="btn btn-secondary" id="btn-new-note">Ny anteckning</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Sparade anteckningar</h3>
+          <ul class="notes-list" id="notes-list"></ul>
+          <p class="empty-state" id="notes-empty">Inga anteckningar ännu. Skriv något ovan!</p>
+        </article>
+
+        <article class="card">
+          <h3>Ladda ner</h3>
+          <p class="help-text">Ta med alla anteckningar hem som en textfil.</p>
+          <div class="button-row">
+            <button type="button" class="btn btn-primary" id="btn-download-txt">Ladda ner som .txt</button>
+            <button type="button" class="btn btn-secondary" id="btn-download-json">Ladda ner som .json</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="tab-bilder" class="tab-panel" aria-labelledby="bilder-heading" hidden>
+        <h2 id="bilder-heading" class="visually-hidden">Bilder</h2>
+
+        <article class="card">
+          <h3>Ladda upp bilder</h3>
+          <p class="help-text">Ta ett foto eller välj från albumet. Bilderna sparas i telefonen.</p>
+
+          <label class="field-label" for="photo-caption">Bildtext (valfritt)</label>
+          <input type="text" id="photo-caption" class="text-input" placeholder="T.ex. Fika vid Bolmen" autocomplete="off" />
+
+          <label class="upload-btn" for="photo-input">
+            <span>Välj eller ta foto</span>
+            <input type="file" id="photo-input" accept="image/*" capture="environment" hidden />
+          </label>
+          <p class="help-text" id="photo-upload-status" aria-live="polite"></p>
+        </article>
+
+        <article class="card">
+          <div class="card-header-row">
+            <h3>Era resebilder</h3>
+            <span class="save-status" id="photo-count">0 bilder</span>
+          </div>
+          <div class="photo-grid" id="photo-grid"></div>
+          <p class="empty-state" id="photos-empty">Inga bilder ännu. Ladda upp ovan!</p>
+          <div class="button-row" id="photo-download-row" hidden>
+            <button type="button" class="btn btn-primary" id="btn-download-all-photos">Ladda ner alla bilder</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="tab-mer" class="tab-panel" aria-labelledby="mer-heading" hidden>
+        <h2 id="mer-heading" class="visually-hidden">Mer information</h2>
+
+        <article class="card">
+          <h3>Viktiga adresser</h3>
+          <ul class="address-list" id="all-addresses"></ul>
+        </article>
+
+        <article class="card">
+          <h3>Körsträckor</h3>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Sträcka</th>
+                  <th>Avstånd</th>
+                  <th>Tid</th>
+                </tr>
+              </thead>
+              <tbody id="distances-table"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Elbil – laddplan</h3>
+          <ul class="bullet-list" id="ev-tips"></ul>
+        </article>
+
+        <article class="card">
+          <h3>Packlista</h3>
+          <ul class="bullet-list" id="pack-list"></ul>
+        </article>
+
+        <article class="card">
+          <h3>Användbara länkar</h3>
+          <ul class="link-list" id="useful-links"></ul>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>God resa!</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="photos.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
+

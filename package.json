@@ -1,0 +1,17 @@
+{
+  "name": "resa",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx --yes serve web -p 3000",
+    "doc": "node create-travel-doc.js",
+    "test": "node --test web/app.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "docx": "^9.7.1"
+  }
+}
