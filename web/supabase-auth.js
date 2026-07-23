@@ -102,12 +102,22 @@
     client.auth.onAuthStateChange((_event, session) => {
       window.__resaAuthSession = session;
       updateAuthUi();
+      if (window.PhotoStore?.refreshGallery) {
+        window.PhotoStore.refreshGallery();
+      }
     });
 
-    refreshSession().catch(() => {
-      $("#photo-auth-message").textContent =
-        "Kunde inte läsa inloggning. Försök logga in igen.";
-    });
+    refreshSession()
+      .then(() => {
+        if (window.PhotoStore?.refreshGallery) {
+          return window.PhotoStore.refreshGallery();
+        }
+        return null;
+      })
+      .catch(() => {
+        $("#photo-auth-message").textContent =
+          "Kunde inte läsa inloggning. Försök logga in igen.";
+      });
   }
 
   window.TripAuth = {

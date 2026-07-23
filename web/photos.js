@@ -160,14 +160,18 @@
           contentType: "image/jpeg",
           upsert: false,
         });
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        throw new Error(`Uppladdning misslyckades: ${uploadError.message}`);
+      }
 
       const { data, error } = await client
         .from("trip_photos")
         .insert({ storage_path: storagePath, caption: caption.trim() })
         .select("id, storage_path, caption, created_at")
         .single();
-      if (error) throw error;
+      if (error) {
+        throw new Error(`Bilden laddades upp men kunde inte sparas i listan: ${error.message}`);
+      }
 
       return data.id;
     },
@@ -178,23 +182,29 @@
         .from("trip_photos")
         .select("id, storage_path, caption, created_at")
         .order("created_at", { ascending: false });
-      if (error) throw error;
+      if (error) throw new Error(`Kunde inte läsa bildlistan: ${error.message}`);
 
-      const photos = await Promise.all(
-        (data ?? []).map(async (row) => {
+      const rows = data ?? [];
+      const photos = [];
+
+      for (const row of rows) {
+        try {
           const imageUrl = await this.signedUrl(row.storage_path);
-          const fileName = row.storage_path.split("/").pop() || "resa-bild.jpg";
-          return {
+          photos.push({
             id: row.id,
             caption: row.caption,
             createdAt: row.created_at,
-            fileName,
+            fileName: row.storage_path.split("/").pop() || "resa-bild.jpg",
             blob: null,
             storagePath: row.storage_path,
             imageUrl,
-          };
-        })
-      );
+          });
+        } catch (urlError) {
+          const message = urlError instanceof Error ? urlError.message : String(urlError);
+          throw new Error(`Bilden finns men kunde inte visas: ${message}`);
+        }
+      }
+
       return photos;
     },
 
@@ -270,7 +280,17 @@
     },
 
     listPhotos() {
+      if (this.isCloudActive()) {
+        return CloudStore.listPhotos().then(async (cloudPhotos) => {
+          if (cloudPhotos.length) return cloudPhotos;
+          return LocalStore.listPhotos();
+        });
+      }
       return activeStore().listPhotos();
+    },
+
+    listLocalPhotos() {
+      return LocalStore.listPhotos();
     },
 
     getPhoto(id) {

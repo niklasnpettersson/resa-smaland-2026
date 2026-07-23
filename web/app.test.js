@@ -44,3 +44,10 @@ test("supabase setup sql exists", () => {
   assert.match(sql, /trip-photos/);
   assert.match(sql, /trip_photos/);
 });
+
+test("app supports trip music player", () => {
+  const musicSource = readFileSync(join(dir, "music.js"), "utf8");
+  assert.match(musicSource, /TripMusic/);
+  assert.match(musicSource, /initMusic/);
+  assert.match(appSource, /TripMusic/);
+});

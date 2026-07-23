@@ -18,7 +18,14 @@
     }
     if (!window.__resaSupabaseClient) {
       const { url, anonKey } = getConfig();
-      window.__resaSupabaseClient = window.supabase.createClient(url, anonKey);
+      window.__resaSupabaseClient = window.supabase.createClient(url, anonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: false,
+          storage: window.localStorage,
+        },
+      });
     }
     return window.__resaSupabaseClient;
   }

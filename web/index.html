@@ -12,11 +12,20 @@
   <body>
     <a class="skip-link" href="#main">Hoppa till innehåll</a>
 
-    <header class="site-header">
+    <header class="site-header site-header--photo">
+      <img
+        class="header-photo"
+        src="images/couple-hero.png"
+        alt="Niklas och Elin — Resa Småland 2026"
+        width="1200"
+        height="800"
+        decoding="async"
+      />
+      <div class="header-overlay" aria-hidden="true"></div>
       <div class="header-inner">
         <p class="eyebrow">25–30 juli 2026</p>
         <h1>Resa Småland</h1>
-        <p class="subtitle">2 personer · Elbil · Bas i Älmhult</p>
+        <p class="subtitle">Niklas &amp; Elin · Elbil · Bas i Älmhult</p>
       </div>
     </header>
 
@@ -134,7 +143,8 @@
         <article class="card" id="photo-auth-panel" hidden>
           <h3>Logga in (gratis molnlagring)</h3>
           <p class="help-text">
-            Med Supabase Free delar ni samma resealbum mellan telefoner. Skapa ett konto i Supabase först (se README).
+            Var och en loggar in med sitt eget konto (ni skapar båda i Supabase).
+            Då ser ni samma resealbum på varsin telefon.
           </p>
           <form id="photo-auth-form">
             <label class="field-label" for="photo-auth-email">E-post</label>
@@ -174,6 +184,9 @@
           <div class="card-header-row">
             <h3>Era resebilder</h3>
             <span class="save-status" id="photo-count">0 bilder</span>
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn btn-secondary" id="btn-refresh-photos">Uppdatera galleri</button>
           </div>
           <div class="photo-grid" id="photo-grid"></div>
           <p class="empty-state" id="photos-empty">Inga bilder ännu. Ladda upp ovan!</p>
@@ -234,12 +247,19 @@
       <p>God resa!</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <button type="button" class="music-fab" id="btn-trip-music" aria-pressed="false" aria-controls="trip-music">
+      <span class="music-fab-icon" aria-hidden="true">♪</span>
+      <span id="trip-music-label">Spela musik</span>
+    </button>
+    <audio id="trip-music" src="audio/resa-theme.mp3" loop preload="auto" playsinline></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8"></script>
     <script src="data.js"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-client.js"></script>
     <script src="supabase-auth.js"></script>
     <script src="photos.js"></script>
+    <script src="music.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

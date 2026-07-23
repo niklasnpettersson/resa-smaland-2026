@@ -28,11 +28,25 @@ Bilderna komprimeras i appen (~200–400 KB/st) så ni håller er långt under g
 
 Det skapar bucket `trip-photos` och tabellen `trip_photos` med säkerhet (RLS).
 
-## Steg 3 — Skapa ett delat konto
+## Steg 3 — Skapa inloggning (en eller två personer)
+
+Ni kan välja **ett gemensamt konto** eller **ett konto var** — båda fungerar.
+
+### Alternativ A — Eget konto till varje person (rekommenderat)
+
+1. **Authentication** → **Users** → **Add user** → skapa konto för person 1
+2. Upprepa **Add user** → skapa konto för person 2 (t.ex. tjejens e-post)
+3. Kryssa i **Auto Confirm User** så ni slipper e-postbekräftelse
+4. Var och en loggar in på fliken **Bilder** med sin egen e-post
+
+Båda ser samma bilder i molnet (alla inloggade får läsa/skriva enligt `setup.sql`).
+
+### Alternativ B — Ett gemensamt resekonto
 
 1. **Authentication** → **Users** → **Add user**
-2. E-post + lösenord ni båda kan använda (ett gemensamt resekonto räcker)
-3. Under **Providers** → **Email**: låt **Confirm email** vara av om ni vill slippa e-postbekräftelse
+2. Samma e-post + lösenord på båda telefonerna
+
+Under **Providers** → **Email**: låt **Confirm email** vara av om ni vill slippa e-postbekräftelse.
 
 ## Steg 4 — Hämta nycklar
 

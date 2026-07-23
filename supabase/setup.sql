@@ -51,3 +51,6 @@ using (bucket_id = 'trip-photos');
 create policy "trip-photos delete"
 on storage.objects for delete to authenticated
 using (bucket_id = 'trip-photos');
+
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.trip_photos to authenticated;

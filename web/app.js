@@ -478,7 +478,6 @@
   }
 
   async function renderPhotoGallery() {
-    const photos = await window.PhotoStore.listPhotos();
     const grid = $("#photo-grid");
     const empty = $("#photos-empty");
     const downloadRow = $("#photo-download-row");
@@ -486,21 +485,60 @@
     const modeHint = $("#photo-storage-mode");
 
     revokePhotoUrls();
+
+    if (window.TripAuth?.refreshSession) {
+      await window.TripAuth.refreshSession().catch(() => null);
+    }
+
+    let photos = [];
+    try {
+      photos = await window.PhotoStore.listPhotos();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Kunde inte hämta bilder.";
+      if (grid) grid.innerHTML = "";
+      if (empty) {
+        empty.hidden = false;
+        empty.textContent = message;
+      }
+      if (downloadRow) downloadRow.hidden = true;
+      if (countEl) countEl.textContent = "0 bilder";
+      if (modeHint) modeHint.textContent = "Kontrollera att du är inloggad under Bilder.";
+      return;
+    }
+
     countEl.textContent = `${photos.length} bild${photos.length === 1 ? "" : "er"}`;
 
     if (modeHint) {
       const mode = window.PhotoStore.storageMode();
-      modeHint.textContent =
-        mode === "cloud"
-          ? "Molnläge (gratis Supabase) — ni ser samma bilder."
-          : mode === "cloud-login-required"
-            ? "Logga in för att dela bilder i molnet."
-            : "Lokalt läge — bilderna finns bara i den här telefonen.";
+      const showingLocalFallback =
+        mode === "cloud" && photos.length > 0 && photos.every((photo) => photo.blob && !photo.imageUrl);
+
+      if (showingLocalFallback) {
+        modeHint.textContent =
+          "Bilderna finns bara på den här telefonen. Ladda upp igen (medan du är inloggad) för att dela i molnet.";
+      } else {
+        modeHint.textContent =
+          mode === "cloud"
+            ? "Molnläge (gratis Supabase) — ni ser samma bilder."
+            : mode === "cloud-login-required"
+              ? "Logga in för att dela bilder i molnet."
+              : "Lokalt läge — bilderna finns bara i den här telefonen.";
+      }
     }
 
     if (!photos.length) {
       grid.innerHTML = "";
       empty.hidden = false;
+      if (window.PhotoStore.isCloudActive()) {
+        empty.textContent = "Inga molnbilder ännu. Ladda upp en bild ovan (medan du är inloggad).";
+      } else if (window.PhotoStore.storageMode() === "cloud-login-required") {
+        const localPhotos = await window.PhotoStore.listLocalPhotos();
+        empty.textContent = localPhotos.length
+          ? `Du har ${localPhotos.length} bild${localPhotos.length === 1 ? "" : "er"} lokalt på telefonen. Logga in för att dela dem i molnet.`
+          : "Inga bilder ännu. Logga in och ladda upp ovan!";
+      } else {
+        empty.textContent = "Inga bilder ännu. Ladda upp ovan!";
+      }
       downloadRow.hidden = true;
       return;
     }
@@ -538,12 +576,26 @@
 
     status.textContent = "Sparar bild…";
     try {
+      if (window.TripAuth?.refreshSession) {
+        await window.TripAuth.refreshSession();
+      }
+      if (window.PhotoStore.isCloudEnabled() && !window.TripAuth?.isSignedIn()) {
+        throw new Error("Du måste logga in under Bilder innan du laddar upp.");
+      }
+
       const caption = $("#photo-caption").value;
       await window.PhotoStore.addPhoto(file, caption);
       $("#photo-caption").value = "";
       $("#photo-input").value = "";
-      status.textContent = "Bilden är sparad!";
+      status.textContent = window.PhotoStore.isCloudActive()
+        ? "Bilden är sparad i molnet!"
+        : "Bilden är sparad lokalt på telefonen.";
       await renderPhotoGallery();
+      const count = (await window.PhotoStore.listPhotos()).length;
+      if (window.PhotoStore.isCloudActive() && count === 0) {
+        status.textContent =
+          "Uppladdningen lyckades inte synkas. Tryck Uppdatera galleri eller ladda upp igen.";
+      }
     } catch (error) {
       status.textContent = error instanceof Error ? error.message : "Kunde inte spara bilden.";
     }
@@ -626,8 +678,24 @@
       true
     );
 
+    $("#btn-refresh-photos")?.addEventListener("click", async () => {
+      const status = $("#photo-upload-status");
+      if (status) status.textContent = "Hämtar bilder…";
+      try {
+        if (window.TripAuth?.refreshSession) {
+          await window.TripAuth.refreshSession();
+        }
+        await renderPhotoGallery();
+        if (status) status.textContent = "";
+      } catch (error) {
+        if (status) {
+          status.textContent =
+            error instanceof Error ? error.message : "Kunde inte hämta bilder.";
+        }
+      }
+    });
+
     window.PhotoStore.refreshGallery = renderPhotoGallery;
-    renderPhotoGallery();
   }
 
   function initTabs() {
@@ -774,10 +842,11 @@
     initDayPicker();
     initDaySwipe();
     initLocation();
-    initPhotos();
     window.TripAuth?.initAuth();
+    initPhotos();
     initTabs();
     initNotes();
+    window.TripMusic?.initMusic();
   }
 
   document.addEventListener("DOMContentLoaded", init);
