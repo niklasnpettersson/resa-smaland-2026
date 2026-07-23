@@ -45,18 +45,9 @@
       <section id="tab-plan" class="tab-panel is-active" aria-labelledby="plan-heading">
         <h2 id="plan-heading" class="visually-hidden">Översikt</h2>
 
-        <article class="card location-card" id="location-card">
-          <div class="card-header-row">
-            <h3>Var är vi nu?</h3>
-            <span class="location-badge" id="location-badge">GPS</span>
-          </div>
-          <p class="help-text" id="location-status">Tryck på knappen för att hitta er plats.</p>
-          <p class="location-today" id="location-today" hidden></p>
-          <p class="location-nearest" id="location-nearest" hidden></p>
-          <div class="button-row">
-            <button type="button" class="btn btn-primary" id="btn-update-location">Hitta min plats</button>
-            <a class="btn btn-secondary" id="btn-open-maps" href="#" hidden>Öppna i kartor</a>
-          </div>
+        <article class="card">
+          <h3>Checklista före avresa</h3>
+          <ul class="checklist" id="pre-trip-checklist"></ul>
         </article>
 
         <article class="card packing-reminder-card" id="packing-reminder" hidden>
@@ -72,11 +63,6 @@
           <p class="help-text">Tryck på en dag för hela dagsplanen.</p>
           <ol class="timeline" id="overview-timeline"></ol>
         </article>
-
-        <article class="card">
-          <h3>Checklista före avresa</h3>
-          <ul class="checklist" id="pre-trip-checklist"></ul>
-        </article>
       </section>
 
       <section id="tab-dag" class="tab-panel" aria-labelledby="dag-heading" hidden>
@@ -87,6 +73,19 @@
         </div>
 
         <p class="day-swipe-hint" id="day-swipe-hint">Svep vänster eller höger för att byta dag</p>
+
+        <article class="card location-card" id="location-card">
+          <div class="card-header-row">
+            <h3>Var är vi nu?</h3>
+            <span class="location-badge" id="location-badge">GPS</span>
+          </div>
+          <p class="help-text" id="location-status">Tryck på knappen för att hitta er plats.</p>
+          <p class="location-nearest" id="location-nearest" hidden></p>
+          <div class="button-row">
+            <button type="button" class="btn btn-primary" id="btn-update-location">Hitta min plats</button>
+            <a class="btn btn-secondary" id="btn-open-maps" href="#" hidden>Öppna i kartor</a>
+          </div>
+        </article>
 
         <div class="day-swipe-area" id="day-swipe-area">
           <div class="day-swipe-content" id="day-swipe-content">

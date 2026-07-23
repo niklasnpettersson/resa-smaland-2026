@@ -593,10 +593,6 @@
     const todayId = getTodayDayId();
     if (todayId) {
       selectDay(todayId);
-      const day = TRIP_DATA.days.find((d) => d.id === todayId);
-      const todayEl = $("#location-today");
-      todayEl.hidden = false;
-      todayEl.textContent = `Idag i planen: ${day.title}`;
     }
 
     $("#btn-update-location").addEventListener("click", requestLocation);
