@@ -139,13 +139,12 @@
       return `${folder}/${crypto.randomUUID()}-${safeName || "bild.jpg"}`;
     },
 
-    async signedUrl(storagePath) {
+    publicUrl(storagePath) {
       const client = window.SupabaseClient.getClient();
-      const { data, error } = await client.storage
+      const { data } = client.storage
         .from(window.SupabaseClient.BUCKET)
-        .createSignedUrl(storagePath, 60 * 60);
-      if (error) throw error;
-      return data.signedUrl;
+        .getPublicUrl(storagePath);
+      return data.publicUrl;
     },
 
     async addPhoto(file, caption = "") {
@@ -184,28 +183,15 @@
         .order("created_at", { ascending: false });
       if (error) throw new Error(`Kunde inte läsa bildlistan: ${error.message}`);
 
-      const rows = data ?? [];
-      const photos = [];
-
-      for (const row of rows) {
-        try {
-          const imageUrl = await this.signedUrl(row.storage_path);
-          photos.push({
-            id: row.id,
-            caption: row.caption,
-            createdAt: row.created_at,
-            fileName: row.storage_path.split("/").pop() || "resa-bild.jpg",
-            blob: null,
-            storagePath: row.storage_path,
-            imageUrl,
-          });
-        } catch (urlError) {
-          const message = urlError instanceof Error ? urlError.message : String(urlError);
-          throw new Error(`Bilden finns men kunde inte visas: ${message}`);
-        }
-      }
-
-      return photos;
+      return (data ?? []).map((row) => ({
+        id: row.id,
+        caption: row.caption,
+        createdAt: row.created_at,
+        fileName: row.storage_path.split("/").pop() || "resa-bild.jpg",
+        blob: null,
+        storagePath: row.storage_path,
+        imageUrl: this.publicUrl(row.storage_path),
+      }));
     },
 
     async getPhoto(id) {
@@ -225,7 +211,7 @@
         fileName: data.storage_path.split("/").pop() || "resa-bild.jpg",
         blob: null,
         storagePath: data.storage_path,
-        imageUrl: await this.signedUrl(data.storage_path),
+        imageUrl: this.publicUrl(data.storage_path),
       };
     },
 
@@ -250,43 +236,38 @@
     },
   };
 
-  function activeStore() {
-    if (window.SupabaseClient?.isConfigured() && window.TripAuth?.isSignedIn()) {
-      return CloudStore;
-    }
-    return LocalStore;
-  }
-
   window.PhotoStore = {
     isCloudEnabled() {
       return Boolean(window.SupabaseClient?.isConfigured());
     },
 
+    // Signed in = may upload/edit. Guests can still view cloud photos.
     isCloudActive() {
       return this.isCloudEnabled() && window.TripAuth?.isSignedIn();
     },
 
     storageMode() {
       if (this.isCloudActive()) return "cloud";
-      if (this.isCloudEnabled()) return "cloud-login-required";
+      if (this.isCloudEnabled()) return "cloud-read";
       return "local";
     },
 
     async addPhoto(file, caption = "") {
       if (this.isCloudEnabled() && !window.TripAuth?.isSignedIn()) {
-        throw new Error("Logga in för att ladda upp till molnet.");
+        throw new Error("Bara Niklas & Elin kan ladda upp bilder — logga in först.");
       }
-      return activeStore().addPhoto(file, caption);
+      const store = this.isCloudActive() ? CloudStore : LocalStore;
+      return store.addPhoto(file, caption);
     },
 
     listPhotos() {
-      if (this.isCloudActive()) {
+      if (this.isCloudEnabled()) {
         return CloudStore.listPhotos().then(async (cloudPhotos) => {
           if (cloudPhotos.length) return cloudPhotos;
           return LocalStore.listPhotos();
         });
       }
-      return activeStore().listPhotos();
+      return LocalStore.listPhotos();
     },
 
     listLocalPhotos() {
@@ -294,15 +275,24 @@
     },
 
     getPhoto(id) {
-      return activeStore().getPhoto(id);
+      const store = this.isCloudEnabled() ? CloudStore : LocalStore;
+      return store.getPhoto(id);
     },
 
     updateCaption(id, caption) {
-      return activeStore().updateCaption(id, caption);
+      if (this.isCloudEnabled() && !window.TripAuth?.isSignedIn()) {
+        return Promise.reject(new Error("Logga in för att ändra bildtexter."));
+      }
+      const store = this.isCloudActive() ? CloudStore : LocalStore;
+      return store.updateCaption(id, caption);
     },
 
     deletePhoto(id) {
-      return activeStore().deletePhoto(id);
+      if (this.isCloudEnabled() && !window.TripAuth?.isSignedIn()) {
+        return Promise.reject(new Error("Logga in för att ta bort bilder."));
+      }
+      const store = this.isCloudActive() ? CloudStore : LocalStore;
+      return store.deletePhoto(id);
     },
 
     refreshGallery: null,

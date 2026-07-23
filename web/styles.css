@@ -120,6 +120,42 @@ body {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
 }
 
+.header-quote {
+  margin: 0.85rem 0 0;
+  padding: 0;
+  border: none;
+  animation: quote-fade-in 0.9s ease-out both;
+}
+
+.header-quote p {
+  margin: 0;
+  font-size: 0.92rem;
+  font-style: italic;
+  line-height: 1.4;
+  opacity: 0.95;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+
+.header-quote cite {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  font-style: normal;
+  opacity: 0.8;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes quote-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (min-width: 640px) {
   .site-header--photo {
     min-height: 20rem;
@@ -700,6 +736,12 @@ body {
 
 .photo-caption-input {
   margin-bottom: 0.5rem;
+}
+
+.photo-caption-static {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  color: var(--text-muted);
 }
 
 .photo-card-actions {

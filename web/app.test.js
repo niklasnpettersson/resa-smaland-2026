@@ -51,3 +51,17 @@ test("app supports trip music player", () => {
   assert.match(musicSource, /initMusic/);
   assert.match(appSource, /TripMusic/);
 });
+
+test("app shows a random Småland quote", () => {
+  assert.match(dataSource, /smalandQuotes/);
+  assert.match(appSource, /renderQuote/);
+});
+
+test("guests can view photos but only signed-in users upload", () => {
+  const photosSource = readFileSync(join(dir, "photos.js"), "utf8");
+  assert.match(photosSource, /cloud-read/);
+  assert.match(photosSource, /publicUrl/);
+  const sql = readFileSync(join(dir, "..", "supabase", "setup.sql"), "utf8");
+  assert.match(sql, /for select to anon, authenticated/);
+  assert.match(sql, /for insert to authenticated/);
+});

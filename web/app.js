@@ -93,6 +93,20 @@
     }
   }
 
+  function renderQuote() {
+    const quotes = TRIP_DATA.smalandQuotes;
+    if (!quotes?.length) return;
+    const box = $("#header-quote");
+    const textEl = $("#header-quote-text");
+    const byEl = $("#header-quote-by");
+    if (!box || !textEl || !byEl) return;
+
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    textEl.textContent = `”${quote.text}”`;
+    byEl.textContent = `— ${quote.by}`;
+    box.hidden = false;
+  }
+
   function renderOverview() {
     const timeline = $("#overview-timeline");
     timeline.innerHTML = TRIP_DATA.overview
@@ -502,14 +516,15 @@
       }
       if (downloadRow) downloadRow.hidden = true;
       if (countEl) countEl.textContent = "0 bilder";
-      if (modeHint) modeHint.textContent = "Kontrollera att du är inloggad under Bilder.";
       return;
     }
 
     countEl.textContent = `${photos.length} bild${photos.length === 1 ? "" : "er"}`;
 
+    const mode = window.PhotoStore.storageMode();
+    const canEdit = mode !== "cloud-read";
+
     if (modeHint) {
-      const mode = window.PhotoStore.storageMode();
       const showingLocalFallback =
         mode === "cloud" && photos.length > 0 && photos.every((photo) => photo.blob && !photo.imageUrl);
 
@@ -519,9 +534,9 @@
       } else {
         modeHint.textContent =
           mode === "cloud"
-            ? "Molnläge (gratis Supabase) — ni ser samma bilder."
-            : mode === "cloud-login-required"
-              ? "Logga in för att dela bilder i molnet."
+            ? "Molnläge — ni ser samma bilder och kan ladda upp."
+            : mode === "cloud-read"
+              ? "Gästläge — alla kan titta. Bara Niklas & Elin kan ladda upp."
               : "Lokalt läge — bilderna finns bara i den här telefonen.";
       }
     }
@@ -531,11 +546,8 @@
       empty.hidden = false;
       if (window.PhotoStore.isCloudActive()) {
         empty.textContent = "Inga molnbilder ännu. Ladda upp en bild ovan (medan du är inloggad).";
-      } else if (window.PhotoStore.storageMode() === "cloud-login-required") {
-        const localPhotos = await window.PhotoStore.listLocalPhotos();
-        empty.textContent = localPhotos.length
-          ? `Du har ${localPhotos.length} bild${localPhotos.length === 1 ? "" : "er"} lokalt på telefonen. Logga in för att dela dem i molnet.`
-          : "Inga bilder ännu. Logga in och ladda upp ovan!";
+      } else if (mode === "cloud-read") {
+        empty.textContent = "Inga bilder ännu — kika tillbaka snart!";
       } else {
         empty.textContent = "Inga bilder ännu. Ladda upp ovan!";
       }
@@ -551,15 +563,25 @@
         if (!photo.imageUrl) {
           photoObjectUrls.set(photo.id, url);
         }
+        const captionHtml = canEdit
+          ? `<input type="text" class="text-input photo-caption-input" data-caption="${photo.id}" value="${escapeAttr(photo.caption || "")}" placeholder="Bildtext…" />`
+          : photo.caption
+            ? `<p class="photo-caption-static">${escapeAttr(photo.caption)}</p>`
+            : "";
+        const actionsHtml = canEdit
+          ? `<div class="photo-card-actions">
+                <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
+                <button type="button" data-delete-photo="${photo.id}" class="btn-danger">Ta bort</button>
+              </div>`
+          : `<div class="photo-card-actions">
+                <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
+              </div>`;
         return `
           <figure class="photo-card" data-photo-id="${photo.id}">
             <img src="${url}" alt="${escapeAttr(photo.caption || "Resebild")}" loading="lazy" />
             <figcaption>
-              <input type="text" class="text-input photo-caption-input" data-caption="${photo.id}" value="${escapeAttr(photo.caption || "")}" placeholder="Bildtext…" />
-              <div class="photo-card-actions">
-                <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
-                <button type="button" data-delete-photo="${photo.id}" class="btn-danger">Ta bort</button>
-              </div>
+              ${captionHtml}
+              ${actionsHtml}
             </figcaption>
           </figure>`;
       })
@@ -834,6 +856,7 @@
   }
 
   function init() {
+    renderQuote();
     renderOverview();
     renderChecklist();
     renderDayPicker();

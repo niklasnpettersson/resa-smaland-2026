@@ -151,4 +151,17 @@ const TRIP_DATA = {
     { label: "Småland tips", url: "https://visitsmaland.se" },
     { label: "FlixBus (syster)", url: "https://flixbus.se" },
   ],
+
+  smalandQuotes: [
+    { text: "Låt aldrig förnuftet hindra dig från att göra det hjärtat vill.", by: "Astrid Lindgren, Vimmerby" },
+    { text: "Allt stort som skedde i världen skedde först i någon människas fantasi.", by: "Astrid Lindgren" },
+    { text: "Än lever Emil i Lönneberga!", by: "Astrid Lindgren" },
+    { text: "Den som är väldigt stark måste också vara väldigt snäll.", by: "Astrid Lindgren" },
+    { text: "En dag vid Bolmen är aldrig bortkastad.", by: "Småländskt visdomsord" },
+    { text: "Smålänningen köper inget nytt förrän loppisen är genomsökt.", by: "Småländskt visdomsord" },
+    { text: "Kaffet smakar bäst i ett växthus.", by: "Småländskt visdomsord" },
+    { text: "Skogen har alltid rätt.", by: "Småländskt visdomsord" },
+    { text: "Det ordnar sig — och gör det inte det, så fikar vi först.", by: "Småländskt visdomsord" },
+    { text: "Hemma är där laddkabeln räcker fram.", by: "Elbilsresenärens ordspråk" },
+  ],
 };

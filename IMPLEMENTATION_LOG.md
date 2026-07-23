@@ -11,3 +11,5 @@
 - Hero header: couple photo (`web/images/couple-hero.png`) with green overlay; subtitle "Niklas & Elin".
 - Photo gallery: clearer errors, refresh after auth, "Uppdatera galleri" button (local, not deployed yet).
 - Trip music: `web/music.js` + floating play/pause; autoplay with gesture fallback; track `web/audio/resa-theme.mp3` ("Dans över logen").
+- Random Småland quote in header on each page load (`smalandQuotes` in `data.js`).
+- Guest mode: anyone can view cloud photos (public bucket + anon select); only signed-in users upload/edit. Requires re-running `supabase/setup.sql`.

@@ -26,6 +26,10 @@
         <p class="eyebrow">25–30 juli 2026</p>
         <h1>Resa Småland</h1>
         <p class="subtitle">Niklas &amp; Elin · Elbil · Bas i Älmhult</p>
+        <blockquote class="header-quote" id="header-quote" hidden>
+          <p id="header-quote-text"></p>
+          <cite id="header-quote-by"></cite>
+        </blockquote>
       </div>
     </header>
 
@@ -141,10 +145,10 @@
         <h2 id="bilder-heading" class="visually-hidden">Bilder</h2>
 
         <article class="card" id="photo-auth-panel" hidden>
-          <h3>Logga in (gratis molnlagring)</h3>
+          <h3>Logga in (för Niklas &amp; Elin)</h3>
           <p class="help-text">
-            Var och en loggar in med sitt eget konto (ni skapar båda i Supabase).
-            Då ser ni samma resealbum på varsin telefon.
+            Gäster behöver inte logga in — bilderna syns nedan.
+            Inloggning krävs bara för att ladda upp.
           </p>
           <form id="photo-auth-form">
             <label class="field-label" for="photo-auth-email">E-post</label>
@@ -251,9 +255,6 @@
       <span class="music-fab-icon" aria-hidden="true">♪</span>
       <span id="trip-music-label">Spela musik</span>
     </button>
-    <div id="music-start-overlay" class="music-start-overlay" hidden>
-      <p class="music-start-overlay-text">Tryck för att starta musiken</p>
-    </div>
     <audio id="trip-music" src="audio/resa-theme.mp3" loop preload="auto" playsinline autoplay></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8"></script>
