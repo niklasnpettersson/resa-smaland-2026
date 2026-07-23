@@ -127,6 +127,13 @@ const TRIP_DATA = {
     "Uppskattad elkostnad hela resan: ca 400–700 kr.",
   ],
 
+  mustBring: [
+    "Niklas: Sertraline.",
+    "Fragmin.",
+    "Madrass (båda).",
+    "Elin.",
+  ],
+
   packList: [
     "Badkläder och handdukar.",
     "Solskydd och myggmedel.",

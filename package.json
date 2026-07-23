@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npx --yes serve web -p 3000",
+    "build": "node scripts/generate-supabase-config.js",
     "doc": "node create-travel-doc.js",
     "test": "node --test web/app.test.js"
   },

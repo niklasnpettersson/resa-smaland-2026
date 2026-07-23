@@ -295,7 +295,12 @@ const doc = new Document({
         bullet("bullets", "Skicka: ankomst 28 juli, hemma senast 30 juli."),
         bullet("bullets", "Fråga om laddplats för elbilen."),
 
-        heading("9. Packlista"),
+        heading("9. Måste tas med"),
+        bullet("bullets", "Niklas: Sertraline."),
+        bullet("bullets", "Fragmin."),
+        bullet("bullets", "Madrass (båda)."),
+        bullet("bullets", "Elin."),
+        heading("10. Övrigt att packa"),
         bullet("bullets", "Badkläder och handdukar."),
         bullet("bullets", "Solskydd och myggmedel."),
         bullet("bullets", "Bekväma skor för trädgård och skog."),
@@ -304,7 +309,7 @@ const doc = new Document({
         bullet("bullets", "Kylväska om ni lagar mat i stuga."),
         bullet("bullets", "Kontanter/Swish för loppisar utan kort."),
 
-        heading("10. Checklista före avresa"),
+        heading("11. Checklista före avresa"),
         bullet("checklist", "Bokat boende Älmhult 25–28 juli."),
         bullet("checklist", "Koordinerat med syster (datum, mötesplats Bolmen)."),
         bullet("checklist", "Koordinerat med Daniel (datum, övernattning, laddning)."),
@@ -313,7 +318,7 @@ const doc = new Document({
         bullet("checklist", "Laddat ner ChargeFinder/ABRP."),
         bullet("checklist", "Packat enligt packlistan."),
 
-        heading("11. Användbara länkar"),
+        heading("12. Användbara länkar"),
         bullet("bullets", "Jeppas trädgård: jeppastradgard.se"),
         bullet("bullets", "Bolmendagarna: visitbolmen.se"),
         bullet("bullets", "Loppisar: svenskaloppisar.se"),

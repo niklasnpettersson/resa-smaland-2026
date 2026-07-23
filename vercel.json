@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "",
+  "buildCommand": "node scripts/generate-supabase-config.js",
+  "outputDirectory": "web"
+}

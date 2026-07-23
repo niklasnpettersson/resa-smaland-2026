@@ -24,6 +24,21 @@ GPS kräver att du tillåter platsåtkomst i webbläsaren. Fungerar bäst via `h
 
 ## Bilder
 
+Utan Supabase sparas bilder lokalt i telefonen. Med **gratis Supabase** (se `docs/SUPABASE_SETUP.md`) delas albumet mellan telefoner efter inloggning.
+
+## Supabase (gratis molnlagring)
+
+Steg-för-steg: [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)
+
+Kortversion:
+
+1. Skapa gratis projekt på [supabase.com](https://supabase.com)
+2. Kör `supabase/setup.sql` i SQL Editor
+3. Skapa ett användarkonto (Authentication → Users)
+4. Lägg `SUPABASE_URL` och `SUPABASE_ANON_KEY` i Vercel → Redeploy
+
+## GPS
+
 ## Dela med mobilen
 
 1. Kör `npm start` på datorn

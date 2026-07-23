@@ -232,6 +232,7 @@
       .join("");
 
     $("#ev-tips").innerHTML = TRIP_DATA.evTips.map((tip) => `<li>${tip}</li>`).join("");
+    $("#must-bring-list").innerHTML = TRIP_DATA.mustBring.map((item) => `<li>${item}</li>`).join("");
     $("#pack-list").innerHTML = TRIP_DATA.packList.map((item) => `<li>${item}</li>`).join("");
     $("#useful-links").innerHTML = TRIP_DATA.links
       .map((link) => `<li><a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.label}</a></li>`)
@@ -482,9 +483,20 @@
     const empty = $("#photos-empty");
     const downloadRow = $("#photo-download-row");
     const countEl = $("#photo-count");
+    const modeHint = $("#photo-storage-mode");
 
     revokePhotoUrls();
     countEl.textContent = `${photos.length} bild${photos.length === 1 ? "" : "er"}`;
+
+    if (modeHint) {
+      const mode = window.PhotoStore.storageMode();
+      modeHint.textContent =
+        mode === "cloud"
+          ? "Molnläge (gratis Supabase) — ni ser samma bilder."
+          : mode === "cloud-login-required"
+            ? "Logga in för att dela bilder i molnet."
+            : "Lokalt läge — bilderna finns bara i den här telefonen.";
+    }
 
     if (!photos.length) {
       grid.innerHTML = "";
@@ -497,8 +509,10 @@
     downloadRow.hidden = false;
     grid.innerHTML = photos
       .map((photo) => {
-        const url = URL.createObjectURL(photo.blob);
-        photoObjectUrls.set(photo.id, url);
+        const url = photo.imageUrl || URL.createObjectURL(photo.blob);
+        if (!photo.imageUrl) {
+          photoObjectUrls.set(photo.id, url);
+        }
         return `
           <figure class="photo-card" data-photo-id="${photo.id}">
             <img src="${url}" alt="${escapeAttr(photo.caption || "Resebild")}" loading="lazy" />
@@ -540,12 +554,21 @@
     if (!photos.length) return;
 
     for (const [index, photo] of photos.entries()) {
-      const url = URL.createObjectURL(photo.blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = photo.fileName || `resa-bild-${index + 1}.jpg`;
-      link.click();
-      URL.revokeObjectURL(url);
+      if (photo.blob) {
+        const url = URL.createObjectURL(photo.blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = photo.fileName || `resa-bild-${index + 1}.jpg`;
+        link.click();
+        URL.revokeObjectURL(url);
+      } else if (photo.imageUrl) {
+        const link = document.createElement("a");
+        link.href = photo.imageUrl;
+        link.download = photo.fileName || `resa-bild-${index + 1}.jpg`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.click();
+      }
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
@@ -565,12 +588,23 @@
       if (downloadBtn) {
         const photo = await window.PhotoStore.getPhoto(downloadBtn.dataset.downloadPhoto);
         if (!photo) return;
-        const url = URL.createObjectURL(photo.blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = photo.fileName || "resa-bild.jpg";
-        link.click();
-        URL.revokeObjectURL(url);
+        if (photo.blob) {
+          const url = URL.createObjectURL(photo.blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = photo.fileName || "resa-bild.jpg";
+          link.click();
+          URL.revokeObjectURL(url);
+          return;
+        }
+        if (photo.imageUrl) {
+          const link = document.createElement("a");
+          link.href = photo.imageUrl;
+          link.download = photo.fileName || "resa-bild.jpg";
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.click();
+        }
         return;
       }
 
@@ -592,6 +626,7 @@
       true
     );
 
+    window.PhotoStore.refreshGallery = renderPhotoGallery;
     renderPhotoGallery();
   }
 
@@ -740,6 +775,7 @@
     initDaySwipe();
     initLocation();
     initPhotos();
+    window.TripAuth?.initAuth();
     initTabs();
     initNotes();
   }

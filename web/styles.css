@@ -662,6 +662,23 @@ body {
   padding: 0;
 }
 
+.must-bring-card {
+  border-color: #f4a261;
+  background: linear-gradient(145deg, #fff, #fff4e6);
+}
+
+.must-bring-card h3 {
+  color: #9a3412;
+}
+
+.must-bring-list li {
+  font-weight: 600;
+}
+
+.must-bring-list li::before {
+  color: #e76f51;
+}
+
 #btn-open-maps {
   text-align: center;
   text-decoration: none;

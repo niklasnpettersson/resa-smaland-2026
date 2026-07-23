@@ -32,82 +32,259 @@
     return blob;
   }
 
-  async function addPhoto(file, caption = "") {
-    const blob = await compressImage(file);
-    const photo = {
-      id: crypto.randomUUID(),
-      caption: caption.trim(),
-      createdAt: new Date().toISOString(),
-      blob,
-      mimeType: "image/jpeg",
-      fileName: file.name || `resa-${Date.now()}.jpg`,
-    };
+  const LocalStore = {
+    async addPhoto(file, caption = "") {
+      const blob = await compressImage(file);
+      const photo = {
+        id: crypto.randomUUID(),
+        caption: caption.trim(),
+        createdAt: new Date().toISOString(),
+        blob,
+        mimeType: "image/jpeg",
+        fileName: file.name || `resa-${Date.now()}.jpg`,
+      };
 
-    const db = await openDb();
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, "readwrite");
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-      tx.objectStore(STORE).put(photo);
-    });
-    db.close();
-    return photo.id;
-  }
+      const db = await openDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore(STORE).put(photo);
+      });
+      db.close();
+      return photo.id;
+    },
 
-  async function listPhotos() {
-    const db = await openDb();
-    const photos = await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, "readonly");
-      const request = tx.objectStore(STORE).getAll();
-      request.onsuccess = () => resolve(request.result ?? []);
-      request.onerror = () => reject(request.error);
-    });
-    db.close();
-    return photos.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
+    async listPhotos() {
+      const db = await openDb();
+      const photos = await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readonly");
+        const request = tx.objectStore(STORE).getAll();
+        request.onsuccess = () => resolve(request.result ?? []);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      return photos
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map((photo) => ({
+          id: photo.id,
+          caption: photo.caption,
+          createdAt: photo.createdAt,
+          fileName: photo.fileName,
+          blob: photo.blob,
+          storagePath: null,
+          imageUrl: null,
+        }));
+    },
 
-  async function getPhoto(id) {
-    const db = await openDb();
-    const photo = await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, "readonly");
-      const request = tx.objectStore(STORE).get(id);
-      request.onsuccess = () => resolve(request.result ?? null);
-      request.onerror = () => reject(request.error);
-    });
-    db.close();
-    return photo;
-  }
+    async getPhoto(id) {
+      const db = await openDb();
+      const photo = await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readonly");
+        const request = tx.objectStore(STORE).get(id);
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      if (!photo) return null;
+      return {
+        id: photo.id,
+        caption: photo.caption,
+        createdAt: photo.createdAt,
+        fileName: photo.fileName,
+        blob: photo.blob,
+        storagePath: null,
+        imageUrl: null,
+      };
+    },
 
-  async function updateCaption(id, caption) {
-    const photo = await getPhoto(id);
-    if (!photo) return;
-    photo.caption = caption.trim();
-    const db = await openDb();
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, "readwrite");
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-      tx.objectStore(STORE).put(photo);
-    });
-    db.close();
-  }
+    async updateCaption(id, caption) {
+      const db = await openDb();
+      const photo = await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readonly");
+        const request = tx.objectStore(STORE).get(id);
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
+      });
+      if (!photo) {
+        db.close();
+        return;
+      }
+      photo.caption = caption.trim();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore(STORE).put(photo);
+      });
+      db.close();
+    },
 
-  async function deletePhoto(id) {
-    const db = await openDb();
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE, "readwrite");
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-      tx.objectStore(STORE).delete(id);
-    });
-    db.close();
+    async deletePhoto(id) {
+      const db = await openDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.objectStore(STORE).delete(id);
+      });
+      db.close();
+    },
+  };
+
+  const CloudStore = {
+    storagePath(fileName) {
+      const folder = window.SupabaseClient.TRIP_FOLDER;
+      const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+      return `${folder}/${crypto.randomUUID()}-${safeName || "bild.jpg"}`;
+    },
+
+    async signedUrl(storagePath) {
+      const client = window.SupabaseClient.getClient();
+      const { data, error } = await client.storage
+        .from(window.SupabaseClient.BUCKET)
+        .createSignedUrl(storagePath, 60 * 60);
+      if (error) throw error;
+      return data.signedUrl;
+    },
+
+    async addPhoto(file, caption = "") {
+      const blob = await compressImage(file);
+      const fileName = file.name || `resa-${Date.now()}.jpg`;
+      const storagePath = this.storagePath(fileName.endsWith(".jpg") ? fileName : `${fileName}.jpg`);
+      const client = window.SupabaseClient.getClient();
+
+      const { error: uploadError } = await client.storage
+        .from(window.SupabaseClient.BUCKET)
+        .upload(storagePath, blob, {
+          contentType: "image/jpeg",
+          upsert: false,
+        });
+      if (uploadError) throw uploadError;
+
+      const { data, error } = await client
+        .from("trip_photos")
+        .insert({ storage_path: storagePath, caption: caption.trim() })
+        .select("id, storage_path, caption, created_at")
+        .single();
+      if (error) throw error;
+
+      return data.id;
+    },
+
+    async listPhotos() {
+      const client = window.SupabaseClient.getClient();
+      const { data, error } = await client
+        .from("trip_photos")
+        .select("id, storage_path, caption, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+
+      const photos = await Promise.all(
+        (data ?? []).map(async (row) => {
+          const imageUrl = await this.signedUrl(row.storage_path);
+          const fileName = row.storage_path.split("/").pop() || "resa-bild.jpg";
+          return {
+            id: row.id,
+            caption: row.caption,
+            createdAt: row.created_at,
+            fileName,
+            blob: null,
+            storagePath: row.storage_path,
+            imageUrl,
+          };
+        })
+      );
+      return photos;
+    },
+
+    async getPhoto(id) {
+      const client = window.SupabaseClient.getClient();
+      const { data, error } = await client
+        .from("trip_photos")
+        .select("id, storage_path, caption, created_at")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        caption: data.caption,
+        createdAt: data.created_at,
+        fileName: data.storage_path.split("/").pop() || "resa-bild.jpg",
+        blob: null,
+        storagePath: data.storage_path,
+        imageUrl: await this.signedUrl(data.storage_path),
+      };
+    },
+
+    async updateCaption(id, caption) {
+      const client = window.SupabaseClient.getClient();
+      const { error } = await client.from("trip_photos").update({ caption: caption.trim() }).eq("id", id);
+      if (error) throw error;
+    },
+
+    async deletePhoto(id) {
+      const photo = await this.getPhoto(id);
+      if (!photo) return;
+      const client = window.SupabaseClient.getClient();
+
+      const { error: storageError } = await client.storage
+        .from(window.SupabaseClient.BUCKET)
+        .remove([photo.storagePath]);
+      if (storageError) throw storageError;
+
+      const { error } = await client.from("trip_photos").delete().eq("id", id);
+      if (error) throw error;
+    },
+  };
+
+  function activeStore() {
+    if (window.SupabaseClient?.isConfigured() && window.TripAuth?.isSignedIn()) {
+      return CloudStore;
+    }
+    return LocalStore;
   }
 
   window.PhotoStore = {
-    addPhoto,
-    listPhotos,
-    getPhoto,
-    updateCaption,
-    deletePhoto,
+    isCloudEnabled() {
+      return Boolean(window.SupabaseClient?.isConfigured());
+    },
+
+    isCloudActive() {
+      return this.isCloudEnabled() && window.TripAuth?.isSignedIn();
+    },
+
+    storageMode() {
+      if (this.isCloudActive()) return "cloud";
+      if (this.isCloudEnabled()) return "cloud-login-required";
+      return "local";
+    },
+
+    async addPhoto(file, caption = "") {
+      if (this.isCloudEnabled() && !window.TripAuth?.isSignedIn()) {
+        throw new Error("Logga in för att ladda upp till molnet.");
+      }
+      return activeStore().addPhoto(file, caption);
+    },
+
+    listPhotos() {
+      return activeStore().listPhotos();
+    },
+
+    getPhoto(id) {
+      return activeStore().getPhoto(id);
+    },
+
+    updateCaption(id, caption) {
+      return activeStore().updateCaption(id, caption);
+    },
+
+    deletePhoto(id) {
+      return activeStore().deletePhoto(id);
+    },
+
+    refreshGallery: null,
   };
 })();

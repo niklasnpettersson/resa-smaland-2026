@@ -131,9 +131,34 @@
       <section id="tab-bilder" class="tab-panel" aria-labelledby="bilder-heading" hidden>
         <h2 id="bilder-heading" class="visually-hidden">Bilder</h2>
 
-        <article class="card">
+        <article class="card" id="photo-auth-panel" hidden>
+          <h3>Logga in (gratis molnlagring)</h3>
+          <p class="help-text">
+            Med Supabase Free delar ni samma resealbum mellan telefoner. Skapa ett konto i Supabase först (se README).
+          </p>
+          <form id="photo-auth-form">
+            <label class="field-label" for="photo-auth-email">E-post</label>
+            <input type="email" id="photo-auth-email" class="text-input" autocomplete="username" required />
+
+            <label class="field-label" for="photo-auth-password">Lösenord</label>
+            <input type="password" id="photo-auth-password" class="text-input" autocomplete="current-password" required />
+
+            <div class="button-row">
+              <button type="submit" class="btn btn-primary">Logga in</button>
+            </div>
+          </form>
+          <p class="help-text" id="photo-auth-message" aria-live="polite"></p>
+        </article>
+
+        <p class="help-text" id="photo-storage-mode"></p>
+        <p class="help-text" id="photo-auth-status" hidden></p>
+        <div class="button-row" id="photo-signout-row" hidden>
+          <button type="button" class="btn btn-secondary" id="btn-photo-sign-out">Logga ut</button>
+        </div>
+
+        <article class="card" id="photo-upload-card">
           <h3>Ladda upp bilder</h3>
-          <p class="help-text">Ta ett foto eller välj från albumet. Bilderna sparas i telefonen.</p>
+          <p class="help-text">Ta ett foto eller välj från albumet.</p>
 
           <label class="field-label" for="photo-caption">Bildtext (valfritt)</label>
           <input type="text" id="photo-caption" class="text-input" placeholder="T.ex. Fika vid Bolmen" autocomplete="off" />
@@ -187,8 +212,14 @@
           <ul class="bullet-list" id="ev-tips"></ul>
         </article>
 
+        <article class="card must-bring-card">
+          <h3>Måste tas med</h3>
+          <p class="help-text">Viktigt — medicin och det ni inte får glömma.</p>
+          <ul class="bullet-list must-bring-list" id="must-bring-list"></ul>
+        </article>
+
         <article class="card">
-          <h3>Packlista</h3>
+          <h3>Övrigt att packa</h3>
           <ul class="bullet-list" id="pack-list"></ul>
         </article>
 
@@ -203,7 +234,11 @@
       <p>God resa!</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="data.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="supabase-auth.js"></script>
     <script src="photos.js"></script>
     <script src="app.js"></script>
   </body>
