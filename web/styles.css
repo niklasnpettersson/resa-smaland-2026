@@ -261,15 +261,37 @@ body {
 }
 
 .timeline li {
-  display: grid;
-  grid-template-columns: 4.5rem 1fr;
-  gap: 0.75rem;
-  padding: 0.75rem 0;
   border-bottom: 1px solid var(--border);
 }
 
 .timeline li:last-child {
   border-bottom: none;
+}
+
+.timeline-link {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.timeline-link:active {
+  background: var(--accent-light);
+}
+
+.timeline-chevron {
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
 .timeline-date {
@@ -593,6 +615,25 @@ body {
   background: #fafcfa;
 }
 
+.notes-list li.notes-group {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+.notes-group-title {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.notes-group:first-child .notes-group-title {
+  margin-top: 0;
+}
+
 .note-item-title {
   font-weight: 700;
   margin-bottom: 0.25rem;
@@ -710,6 +751,23 @@ body {
 }
 
 .photo-grid {
+  display: block;
+}
+
+.photo-group-title {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.photo-group-title:first-child {
+  margin-top: 0;
+}
+
+.photo-group-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.85rem;
@@ -763,6 +821,11 @@ body {
 .packing-card[data-packing-person="elin"] {
   border-color: #f4a261;
   background: linear-gradient(145deg, #fff, #fff8f0);
+}
+
+.packing-reminder-card {
+  border-color: #f4a261;
+  background: linear-gradient(145deg, #fff, #fff4e6);
 }
 
 .packing-group-title {

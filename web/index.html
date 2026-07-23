@@ -59,18 +59,17 @@
           </div>
         </article>
 
-        <article class="card highlight-card">
-          <h3>I korthet</h3>
-          <p>Avresa från Stavsnäs 25 juli. Hemma igen senast 30 juli.</p>
-          <ul class="pill-list">
-            <li>Jeppas trädgård</li>
-            <li>Syster vid Bolmen</li>
-            <li>Daniel i Jönköping</li>
-          </ul>
+        <article class="card packing-reminder-card" id="packing-reminder" hidden>
+          <h3>🎒 Dags att packa!</h3>
+          <p class="help-text" id="packing-reminder-status"></p>
+          <div class="button-row">
+            <button type="button" class="btn btn-primary" id="btn-goto-packing">Öppna packlistorna</button>
+          </div>
         </article>
 
         <article class="card">
           <h3>Veckoschema</h3>
+          <p class="help-text">Tryck på en dag för hela dagsplanen.</p>
           <ol class="timeline" id="overview-timeline"></ol>
         </article>
 
@@ -113,8 +112,11 @@
             Skriv tankar, köp, minnen eller saker att dela. Allt sparas automatiskt i telefonen.
           </p>
 
+          <label class="field-label" for="note-day">Vilken dag gäller det?</label>
+          <select id="note-day" class="text-input"></select>
+
           <label class="field-label" for="note-title">Rubrik (valfritt)</label>
-          <input type="text" id="note-title" class="text-input" placeholder="T.ex. Dag 2 – Jeppas trädgård" autocomplete="off" />
+          <input type="text" id="note-title" class="text-input" placeholder="T.ex. Fika i växthuset" autocomplete="off" />
 
           <label class="field-label" for="note-body">Anteckning</label>
           <textarea id="note-body" class="text-area" rows="8" placeholder="Skriv här…"></textarea>

@@ -13,3 +13,5 @@
 - Trip music: `web/music.js` + floating play/pause; autoplay with gesture fallback; track `web/audio/resa-theme.mp3` ("Dans över logen").
 - Random Småland quote in header on each page load (`smalandQuotes` in `data.js`).
 - Guest mode: anyone can view cloud photos (public bucket + anon select); only signed-in users upload/edit. Requires re-running `supabase/setup.sql`.
+- Declutter: removed "I korthet" card, weekly schedule rows now link to day details, deduplicated EV tips vs pre-trip checklist.
+- Per-day organization: notes get a day selector and grouped list; photos grouped by trip day (from createdAt); packing reminder card on Plan tab until departure day.

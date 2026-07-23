@@ -108,23 +108,46 @@
     box.hidden = false;
   }
 
+  function activateTab(tabId) {
+    const buttons = document.querySelectorAll(".tab-btn");
+    const panels = document.querySelectorAll(".tab-panel");
+    buttons.forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tabId));
+    panels.forEach((panel) => {
+      const isActive = panel.id === `tab-${tabId}`;
+      panel.classList.toggle("is-active", isActive);
+      panel.hidden = !isActive;
+    });
+  }
+
   function renderOverview() {
     const timeline = $("#overview-timeline");
     timeline.innerHTML = TRIP_DATA.overview
-      .map(
-        (item) => `
+      .map((item, index) => {
+        const dayId = TRIP_DATA.days[index]?.id ?? "";
+        return `
         <li>
-          <div class="timeline-date">
-            ${item.date}
-            <span class="timeline-weekday">${item.weekday}</span>
-          </div>
-          <div>
-            <strong>${item.title}</strong><br />
-            <span class="help-text">${item.summary}</span>
-          </div>
-        </li>`
-      )
+          <button type="button" class="timeline-link" data-goto-day="${dayId}">
+            <div class="timeline-date">
+              ${item.date}
+              <span class="timeline-weekday">${item.weekday}</span>
+            </div>
+            <div>
+              <strong>${item.title}</strong><br />
+              <span class="help-text">${item.summary}</span>
+            </div>
+            <span class="timeline-chevron" aria-hidden="true">›</span>
+          </button>
+        </li>`;
+      })
       .join("");
+
+    timeline.addEventListener("click", (event) => {
+      const link = event.target.closest("[data-goto-day]");
+      if (!link?.dataset.gotoDay) return;
+      selectDay(link.dataset.gotoDay);
+      activateTab("dag");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   function renderChecklist() {
@@ -256,6 +279,36 @@
     return `${personId}|${item}`;
   }
 
+  function updatePackingReminder() {
+    const card = $("#packing-reminder");
+    const status = $("#packing-reminder-status");
+    if (!card || !status) return;
+
+    // Only shown up to and including departure day.
+    const tripStart = TRIP_DATA.days[0].id;
+    const today = new Date().toISOString().slice(0, 10);
+    if (today > tripStart) {
+      card.hidden = true;
+      return;
+    }
+
+    const state = loadJson(STORAGE_KEYS.packing, {});
+    const parts = TRIP_DATA.packing.map((person) => {
+      const { done, total } = countPacked(person, state);
+      return `${person.name} ${done}/${total}`;
+    });
+
+    const allDone = TRIP_DATA.packing.every((person) => {
+      const { done, total } = countPacked(person, state);
+      return done === total;
+    });
+
+    status.textContent = allDone
+      ? "Allt är packat — bra jobbat!"
+      : `Packat hittills: ${parts.join(" · ")}`;
+    card.hidden = false;
+  }
+
   function countPacked(person, state) {
     let total = 0;
     let done = 0;
@@ -326,7 +379,15 @@
         const { done, total } = countPacked(person, saved);
         countEl.textContent = `${done} av ${total} packat`;
       }
+      updatePackingReminder();
     });
+
+    $("#btn-goto-packing")?.addEventListener("click", () => {
+      activateTab("mer");
+      $("#packing-sections")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    updatePackingReminder();
   }
 
   function getNotes() {
@@ -338,11 +399,32 @@
     setSaveStatus("saved");
   }
 
+  function todayDayId() {
+    const today = new Date().toISOString().slice(0, 10);
+    return TRIP_DATA.days.some((day) => day.id === today) ? today : "";
+  }
+
+  function dayTitle(dayId) {
+    return TRIP_DATA.days.find((day) => day.id === dayId)?.title ?? "";
+  }
+
+  function initNoteDaySelect() {
+    const select = $("#note-day");
+    if (!select) return;
+    select.innerHTML = [
+      `<option value="">Allmänt (hela resan)</option>`,
+      ...TRIP_DATA.days.map((day) => `<option value="${day.id}">${day.title}</option>`),
+    ].join("");
+    select.value = todayDayId();
+    select.addEventListener("change", scheduleAutoSave);
+  }
+
   function saveDraft() {
     const draft = {
       id: editingNoteId,
       title: $("#note-title").value.trim(),
       body: $("#note-body").value,
+      dayId: $("#note-day")?.value || "",
     };
     saveJson(STORAGE_KEYS.draft, draft);
     setSaveStatus("saved");
@@ -354,6 +436,9 @@
     editingNoteId = draft.id;
     $("#note-title").value = draft.title || "";
     $("#note-body").value = draft.body || "";
+    if (draft.dayId !== undefined && $("#note-day")) {
+      $("#note-day").value = draft.dayId || "";
+    }
   }
 
   function scheduleAutoSave() {
@@ -372,15 +457,16 @@
 
     const notes = getNotes();
     const now = new Date().toISOString();
+    const dayId = $("#note-day")?.value || "";
 
     if (editingNoteId) {
       const index = notes.findIndex((n) => n.id === editingNoteId);
       if (index >= 0) {
-        notes[index] = { ...notes[index], title, body, updatedAt: now };
+        notes[index] = { ...notes[index], title, body, dayId, updatedAt: now };
       }
     } else {
       editingNoteId = crypto.randomUUID();
-      notes.unshift({ id: editingNoteId, title, body, createdAt: now, updatedAt: now });
+      notes.unshift({ id: editingNoteId, title, body, dayId, createdAt: now, updatedAt: now });
     }
 
     saveNotes(notes);
@@ -393,6 +479,7 @@
     editingNoteId = null;
     $("#note-title").value = "";
     $("#note-body").value = "";
+    if ($("#note-day")) $("#note-day").value = todayDayId();
     localStorage.removeItem(STORAGE_KEYS.draft);
     setSaveStatus("saved");
   }
@@ -409,11 +496,11 @@
     }
 
     empty.hidden = true;
-    list.innerHTML = notes
-      .map((note) => {
-        const heading = note.title || "Utan rubrik";
-        const preview = note.body.length > 120 ? `${note.body.slice(0, 120)}…` : note.body;
-        return `
+
+    const noteHtml = (note) => {
+      const heading = note.title || "Utan rubrik";
+      const preview = note.body.length > 120 ? `${note.body.slice(0, 120)}…` : note.body;
+      return `
           <li>
             <div class="note-item-title">${escapeHtml(heading)}</div>
             <div class="note-item-meta">${formatDate(note.updatedAt || note.createdAt)}</div>
@@ -422,6 +509,22 @@
               <button type="button" data-edit="${note.id}">Redigera</button>
               <button type="button" data-delete="${note.id}" class="btn-danger">Ta bort</button>
             </div>
+          </li>`;
+    };
+
+    const groups = [
+      { id: "", label: "Allmänt" },
+      ...TRIP_DATA.days.map((day) => ({ id: day.id, label: day.title })),
+    ];
+
+    list.innerHTML = groups
+      .map((group) => {
+        const groupNotes = notes.filter((note) => (note.dayId || "") === group.id);
+        if (!groupNotes.length) return "";
+        return `
+          <li class="notes-group">
+            <h4 class="notes-group-title">${group.label}</h4>
+            <ul class="notes-list">${groupNotes.map(noteHtml).join("")}</ul>
           </li>`;
       })
       .join("");
@@ -633,33 +736,53 @@
 
     empty.hidden = true;
     downloadRow.hidden = false;
-    grid.innerHTML = photos
-      .map((photo) => {
-        const url = photo.imageUrl || URL.createObjectURL(photo.blob);
-        if (!photo.imageUrl) {
-          photoObjectUrls.set(photo.id, url);
-        }
-        const captionHtml = canEdit
-          ? `<input type="text" class="text-input photo-caption-input" data-caption="${photo.id}" value="${escapeAttr(photo.caption || "")}" placeholder="Bildtext…" />`
-          : photo.caption
-            ? `<p class="photo-caption-static">${escapeAttr(photo.caption)}</p>`
-            : "";
-        const actionsHtml = canEdit
-          ? `<div class="photo-card-actions">
-                <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
-                <button type="button" data-delete-photo="${photo.id}" class="btn-danger">Ta bort</button>
-              </div>`
-          : `<div class="photo-card-actions">
-                <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
-              </div>`;
+
+    const photoCardHtml = (photo) => {
+      const url = photo.imageUrl || URL.createObjectURL(photo.blob);
+      if (!photo.imageUrl) {
+        photoObjectUrls.set(photo.id, url);
+      }
+      const captionHtml = canEdit
+        ? `<input type="text" class="text-input photo-caption-input" data-caption="${photo.id}" value="${escapeAttr(photo.caption || "")}" placeholder="Bildtext…" />`
+        : photo.caption
+          ? `<p class="photo-caption-static">${escapeAttr(photo.caption)}</p>`
+          : "";
+      const actionsHtml = canEdit
+        ? `<div class="photo-card-actions">
+              <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
+              <button type="button" data-delete-photo="${photo.id}" class="btn-danger">Ta bort</button>
+            </div>`
+        : `<div class="photo-card-actions">
+              <button type="button" data-download-photo="${photo.id}">Ladda ner</button>
+            </div>`;
+      return `
+        <figure class="photo-card" data-photo-id="${photo.id}">
+          <img src="${url}" alt="${escapeAttr(photo.caption || "Resebild")}" loading="lazy" />
+          <figcaption>
+            ${captionHtml}
+            ${actionsHtml}
+          </figcaption>
+        </figure>`;
+    };
+
+    // Group photos by trip day based on when they were taken/uploaded.
+    const photoDayId = (photo) => {
+      const date = (photo.createdAt || "").slice(0, 10);
+      return TRIP_DATA.days.some((day) => day.id === date) ? date : "";
+    };
+
+    const groups = [
+      ...TRIP_DATA.days.map((day) => ({ id: day.id, label: day.title })),
+      { id: "", label: "Övriga bilder" },
+    ];
+
+    grid.innerHTML = groups
+      .map((group) => {
+        const groupPhotos = photos.filter((photo) => photoDayId(photo) === group.id);
+        if (!groupPhotos.length) return "";
         return `
-          <figure class="photo-card" data-photo-id="${photo.id}">
-            <img src="${url}" alt="${escapeAttr(photo.caption || "Resebild")}" loading="lazy" />
-            <figcaption>
-              ${captionHtml}
-              ${actionsHtml}
-            </figcaption>
-          </figure>`;
+          <h4 class="photo-group-title">${group.label}</h4>
+          <div class="photo-group-grid">${groupPhotos.map(photoCardHtml).join("")}</div>`;
       })
       .join("");
   }
@@ -797,23 +920,13 @@
   }
 
   function initTabs() {
-    const buttons = document.querySelectorAll(".tab-btn");
-    const panels = document.querySelectorAll(".tab-panel");
-
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const tab = btn.dataset.tab;
-        buttons.forEach((b) => b.classList.toggle("is-active", b === btn));
-        panels.forEach((panel) => {
-          const isActive = panel.id === `tab-${tab}`;
-          panel.classList.toggle("is-active", isActive);
-          panel.hidden = !isActive;
-        });
-      });
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => activateTab(btn.dataset.tab));
     });
   }
 
   function initNotes() {
+    initNoteDaySelect();
     loadDraft();
     renderNotesList();
 
@@ -834,6 +947,7 @@
         editingNoteId = note.id;
         $("#note-title").value = note.title || "";
         $("#note-body").value = note.body || "";
+        if ($("#note-day")) $("#note-day").value = note.dayId || "";
         saveDraft();
         document.querySelector('[data-tab="anteckningar"]').click();
         $("#note-body").focus();

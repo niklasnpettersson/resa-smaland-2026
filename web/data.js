@@ -119,11 +119,9 @@ const TRIP_DATA = {
   ],
 
   evTips: [
-    "Ladda 100 % hemma i Stavsnäs före avfärd.",
     "Snabbladda till 80 % vid stopp (snabbare än till 100 %).",
     "Huvudstopp: Jönköping M2 Center, Ljungby Elservice, Växjö/Klevshult.",
     "Fråga Daniel om laddplats i Jönköping.",
-    "Appar: ChargeFinder, A Better Route Planner (ABRP).",
     "Uppskattad elkostnad hela resan: ca 400–700 kr.",
   ],
 

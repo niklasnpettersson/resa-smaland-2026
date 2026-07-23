@@ -61,6 +61,12 @@ test("app shows a random Småland quote", () => {
   assert.match(appSource, /renderQuote/);
 });
 
+test("notes and photos are organized per trip day", () => {
+  assert.match(appSource, /initNoteDaySelect/);
+  assert.match(appSource, /photoDayId/);
+  assert.match(appSource, /updatePackingReminder/);
+});
+
 test("guests can view photos but only signed-in users upload", () => {
   const photosSource = readFileSync(join(dir, "photos.js"), "utf8");
   assert.match(photosSource, /cloud-read/);
