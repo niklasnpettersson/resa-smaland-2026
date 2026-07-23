@@ -251,7 +251,10 @@
       <span class="music-fab-icon" aria-hidden="true">♪</span>
       <span id="trip-music-label">Spela musik</span>
     </button>
-    <audio id="trip-music" src="audio/resa-theme.mp3" loop preload="auto" playsinline></audio>
+    <div id="music-start-overlay" class="music-start-overlay" hidden>
+      <p class="music-start-overlay-text">Tryck för att starta musiken</p>
+    </div>
+    <audio id="trip-music" src="audio/resa-theme.mp3" loop preload="auto" playsinline autoplay></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8"></script>
     <script src="data.js"></script>

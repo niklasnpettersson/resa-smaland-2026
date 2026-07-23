@@ -1,13 +1,9 @@
 (function () {
   const STORAGE_KEY = "resa-smaland-music-muted-v1";
-  const DEFAULT_VOLUME = 0.35;
+  const DEFAULT_VOLUME = 0.4;
 
   function $(sel) {
     return document.querySelector(sel);
-  }
-
-  function wasMuted() {
-    return localStorage.getItem(STORAGE_KEY) === "1";
   }
 
   function setMutedPref(muted) {
@@ -17,11 +13,16 @@
   function updateUi(playing, needsGesture) {
     const btn = $("#btn-trip-music");
     const label = $("#trip-music-label");
+    const overlay = $("#music-start-overlay");
     if (!btn || !label) return;
 
     btn.setAttribute("aria-pressed", playing ? "true" : "false");
     btn.classList.toggle("is-playing", playing);
     btn.classList.toggle("needs-gesture", Boolean(needsGesture) && !playing);
+
+    if (overlay) {
+      overlay.hidden = playing || !needsGesture;
+    }
 
     if (needsGesture && !playing) {
       label.textContent = "Tryck för musik";
@@ -33,6 +34,7 @@
   }
 
   async function tryPlay(audio) {
+    audio.muted = false;
     audio.volume = DEFAULT_VOLUME;
     await audio.play();
     setMutedPref(false);
@@ -45,6 +47,11 @@
     updateUi(false, false);
   }
 
+  function hideOverlay() {
+    const overlay = $("#music-start-overlay");
+    if (overlay) overlay.hidden = true;
+  }
+
   function initMusic() {
     const audio = $("#trip-music");
     const btn = $("#btn-trip-music");
@@ -52,58 +59,94 @@
 
     let gestureBound = false;
 
-    const bindGestureFallback = () => {
-      if (gestureBound || wasMuted()) return;
-      gestureBound = true;
-      const startOnGesture = async () => {
-        document.removeEventListener("pointerdown", startOnGesture);
-        document.removeEventListener("keydown", startOnGesture);
-        if (wasMuted() || !audio.paused) return;
-        try {
-          await tryPlay(audio);
-        } catch {
-          updateUi(false, true);
-        }
-      };
-      document.addEventListener("pointerdown", startOnGesture, { once: true });
-      document.addEventListener("keydown", startOnGesture, { once: true });
+    const startFromGesture = async () => {
+      if (!audio.paused) {
+        hideOverlay();
+        return;
+      }
+      try {
+        await tryPlay(audio);
+        hideOverlay();
+      } catch {
+        updateUi(false, true);
+      }
     };
+
+    const bindGestureFallback = () => {
+      if (gestureBound) return;
+      gestureBound = true;
+      updateUi(false, true);
+
+      const onGesture = async (event) => {
+        if (event.target.closest("#btn-trip-music")) return;
+        document.removeEventListener("pointerdown", onGesture, true);
+        document.removeEventListener("keydown", onGesture, true);
+        await startFromGesture();
+      };
+
+      document.addEventListener("pointerdown", onGesture, true);
+      document.addEventListener("keydown", onGesture, true);
+    };
+
+    $("#music-start-overlay")?.addEventListener("click", async (event) => {
+      event.preventDefault();
+      await startFromGesture();
+    });
 
     btn.addEventListener("click", async (event) => {
       event.stopPropagation();
       try {
         if (audio.paused) {
           await tryPlay(audio);
+          hideOverlay();
         } else {
           await pause(audio);
         }
       } catch {
         updateUi(false, true);
+        bindGestureFallback();
       }
     });
 
-    audio.addEventListener("play", () => updateUi(true, false));
+    audio.addEventListener("play", () => {
+      hideOverlay();
+      updateUi(true, false);
+    });
     audio.addEventListener("pause", () => {
-      if (!wasMuted()) updateUi(false, true);
-      else updateUi(false, false);
+      if (localStorage.getItem(STORAGE_KEY) === "1") {
+        updateUi(false, false);
+      } else {
+        updateUi(false, true);
+      }
     });
     audio.addEventListener("error", () => {
+      hideOverlay();
       updateUi(false, false);
       const label = $("#trip-music-label");
       if (label) label.textContent = "Musikfil saknas";
       btn.disabled = true;
-      btn.title = "Lägg en MP3 i web/audio/resa-theme.mp3";
     });
 
-    if (wasMuted()) {
-      updateUi(false, false);
-      return;
+    // Always try to start immediately on every visit.
+    audio.setAttribute("autoplay", "");
+    audio.load();
+
+    let started = false;
+    const attempt = () => {
+      if (started || !audio.paused) return;
+      started = true;
+      tryPlay(audio).catch(() => {
+        started = false;
+        bindGestureFallback();
+      });
+    };
+
+    if (audio.readyState >= 2) {
+      attempt();
+    } else {
+      audio.addEventListener("canplay", attempt, { once: true });
+      setTimeout(attempt, 400);
     }
-
-    tryPlay(audio).catch(() => {
-      updateUi(false, true);
-      bindGestureFallback();
-    });
   }
 
   window.TripMusic = { initMusic };
